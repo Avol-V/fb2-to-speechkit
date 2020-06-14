@@ -1,0 +1,40 @@
+{
+  "name": "fb2-to-speechkit",
+  "version": "1.0.0",
+  "description": "Convert FB2 to Yandex SpeechKit",
+  "keywords": [
+    "fb2",
+    "speechkit",
+    "text",
+    "to",
+    "audio",
+    "text2audio"
+  ],
+  "homepage": "https://github.com/Avol-V/fb2-to-speechkit#readme",
+  "bugs": {
+    "url": "https://github.com/Avol-V/fb2-to-speechkit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Avol-V/fb2-to-speechkit.git"
+  },
+  "license": "MIT",
+  "author": "Andrey Volynkin",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "eyo-kernel": "^2.5.6",
+    "xml-flow": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.13",
+    "typescript": "^3.9.5"
+  },
+  "engines": {
+    "node": ">=12.0"
+  }
+}
