@@ -1,10 +1,10 @@
-import { pause } from './markup/pause';
 import { prepareText } from './prepare-text';
+import { getTextSize } from './get-text-size';
 
 import type { Markup } from 'xml-flow';
-import type { SpeakParts } from './speak-parts';
+import type { Script } from './script';
 
-export function processSection( section: Markup, parts: SpeakParts ): void
+export function processSection( section: Markup, script: Script ): void
 {
 	const items = section.$markup;
 	
@@ -13,16 +13,14 @@ export function processSection( section: Markup, parts: SpeakParts ): void
 		return;
 	}
 	
-	debugger;
-	
-	parts.nextSection();
+	script.breakSection();
 	
 	if ( typeof items === 'string' )
 	{
 		return;
 	}
 	
-	processMarkupItems( items, parts );
+	processMarkupItems( items, script );
 }
 
 /**
@@ -30,7 +28,7 @@ export function processSection( section: Markup, parts: SpeakParts ): void
  * 
  * @param items Элементы разметки
  */
-function processMarkupItems( items: Markup['$markup'], parts: SpeakParts ): void
+function processMarkupItems( items: Markup['$markup'], script: Script ): void
 {
 	if ( !items )
 	{
@@ -39,7 +37,7 @@ function processMarkupItems( items: Markup['$markup'], parts: SpeakParts ): void
 	
 	for ( const item of items )
 	{
-		processMarkupItem( item, parts );
+		processMarkupItem( item, script );
 	}
 }
 
@@ -48,27 +46,21 @@ function processMarkupItems( items: Markup['$markup'], parts: SpeakParts ): void
  * 
  * @param markup Элемент разметки
  */
-function processMarkupItem( markup: Markup | string, parts: SpeakParts ): void
+function processMarkupItem( markup: Markup | string, script: Script ): void
 {
 	if ( typeof markup === 'string' )
 	{
-		if ( parts.isInParagraph() )
+		if ( /^ *[-–—] /.test( markup ) )
 		{
-			if (
-				( parts.getIndexInParagraph() === 0 )
-				&& /^ *[-–—] /.test( markup )
-			)
-			{
-				parts.startDialogue();
-			}
-			else
-			{
-				parts.stopDialogue();
-			}
+			script.asDialogue();
+		}
+		else
+		{
+			script.stopDialogue();
 		}
 		
-		parts.addToIndexInParagraph( markup.trim().length );
-		parts.add( prepareText( markup ) );
+		script.addBlockSize( getTextSize( markup ) );
+		script.addText( prepareText( markup ) );
 		
 		return;
 	}
@@ -77,54 +69,37 @@ function processMarkupItem( markup: Markup | string, parts: SpeakParts ): void
 	{
 		case 'title':
 		case 'subtitle':
-			// if (
-			// 	( typeof markup.$markup === 'string' )
-			// 	&& ( /^\s*\*\s*\*\s*\*\s*$/.test( markup.$markup ) )
-			// )
-			// {
-			// 	parts.add( pause( 4 ) );
-			// }
-			// else
-			// {
-				parts.nextSection();
-				parts.add( pause( 3 ) );
-				parts.setContext( {
-					voice: 'zahar',
-				} );
-				processMarkupItems( markup.$markup, parts );
-				parts.resetContext();
-			// }
-			
+			script.breakSection();
+			script.openTitle();
+			processMarkupItems( markup.$markup, script );
+			script.closeTitle();
 			break;
 		
 		case 'p':
-			parts.startParagraph();
-			processMarkupItems( markup.$markup, parts );
+			script.openParagraph();
+			processMarkupItems( markup.$markup, script );
+			script.closeParagraph();
 			break;
 		
 		case 'empty-line':
-			parts.add( pause( 1 ) );
-			processMarkupItems( markup.$markup, parts );
+			script.addPause();
+			processMarkupItems( markup.$markup, script );
 			break;
 		
 		case 'emphasis':
-			parts.setContext( {
-				emotion: 'good',
-			} );
-			processMarkupItems( markup.$markup, parts );
-			parts.resetContext();
+			script.openEmphasis();
+			processMarkupItems( markup.$markup, script );
+			script.closeEmphasis();
 			break;
 		
 		case 'strong':
-			parts.setContext( {
-				emotion: 'evil',
-			} );
-			processMarkupItems( markup.$markup, parts );
-			parts.resetContext();
+			script.openStrong();
+			processMarkupItems( markup.$markup, script );
+			script.closeStrong();
 			break;
 		
 		default:
-			processMarkupItems( markup.$markup, parts );
+			processMarkupItems( markup.$markup, script );
 			break;
 	}
 }

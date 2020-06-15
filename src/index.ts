@@ -3,14 +3,15 @@ import { resolve as pathResolve } from 'path';
 import { promisify } from 'util';
 import { readFb2File } from './lib/read-fb2-file';
 import { processSection } from './lib/process-section';
-import { SpeakParts } from './lib/speak-parts';
+import { Script } from './lib/script';
+import { scriptToSpeechFragments } from './lib/script-to-speech-fragments';
 
 const writeFile = promisify( writeFileCallback );
 
 const inputPath = pathResolve( process.cwd(), '_test/test3.fb2' );
 const outputPath = pathResolve( process.cwd(), '_test/book.json' );
 
-const parts = new SpeakParts();
+const script = new Script();
 
 readFb2File(
 	inputPath,
@@ -25,12 +26,14 @@ readFb2File(
 		
 		if ( result.done )
 		{
-			writeFile( outputPath, JSON.stringify( parts.get(), null, '\t' ), 'utf8' )
+			const fragments = scriptToSpeechFragments( script.getList() );
+			
+			writeFile( outputPath, JSON.stringify( fragments, null, '\t' ), 'utf8' )
 				.then( () => console.log( 'Done.' ) );
 			
-				return;
+			return;
 		}
 		
-		processSection( result.section, parts );
+		processSection( result.section, script );
 	},
 );

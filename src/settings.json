@@ -1,0 +1,12 @@
+{
+	"language": "ru-RU",
+	"voices": {
+		"narrator": "oksana",
+		"companion1": "zahar",
+		"companion2": "omazh",
+		"titles": "zahar"
+	},
+	"speed": 1,
+	"defaultPause": 1,
+	"titlePause": 3
+}
