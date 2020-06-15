@@ -19,6 +19,33 @@ export type SpeechLanguage =
 	| 'en-US'
 ;
 
+export type Transforms = {
+	/**
+	 * Restore "Ё"
+	 */
+	yoficator: boolean;
+	/**
+	 * Convert roman numerals to arabic numbers
+	 */
+	convertRomeToNumber: boolean;
+	/**
+	 * Replace unicode ellipsis char with tree dots
+	 */
+	convertEllipsisToDots: boolean;
+	/**
+	 * Remove footnotes, like "[1]"
+	 */
+	removeFootnotesFromText: boolean;
+	/**
+	 * Replace three (or more) asterisks in a row (chapter break)
+	 */
+	replaceDinkus: string | false;
+	/**
+	 * Remove different separators, like a set of "=" in a row
+	 */
+	removeSeparators: boolean;
+};
+
 export type Settings = {
 	language: SpeechLanguage;
 	voices: {
@@ -30,6 +57,7 @@ export type Settings = {
 	speed: number;
 	defaultPause: number;
 	titlePause: number;
+	transforms: Transforms;
 };
 
 const defaultSettings: Settings = {
@@ -43,6 +71,14 @@ const defaultSettings: Settings = {
 	speed: 1,
 	defaultPause: 1,
 	titlePause: 3,
+	transforms: {
+		yoficator: true,
+		convertRomeToNumber: true,
+		convertEllipsisToDots: true,
+		removeFootnotesFromText: false,
+		replaceDinkus: '-',
+		removeSeparators: true,
+	},
 };
 
 export const settings: Readonly<Settings> = merge(

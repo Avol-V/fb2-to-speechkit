@@ -1,5 +1,5 @@
 import { prepareText } from './prepare-text';
-import { getTextSize } from './get-text-size';
+import { getTextSize } from './utils/get-text-size';
 
 import type { Markup } from 'xml-flow';
 import type { Script } from './script';

@@ -1,4 +1,4 @@
-const MIN_SECTION_SIZE = 1000;
+const MIN_SECTION_SIZE = 10000;
 
 export type ScriptSectionItem = {
 	type: 'section';

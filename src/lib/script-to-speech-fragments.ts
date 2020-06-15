@@ -11,7 +11,6 @@ export type SpeechFragment = {
 	emotion: SpeechEmotion;
 	speed: number;
 	section: number;
-	number: number;
 	content: string;
 };
 
@@ -21,7 +20,6 @@ const initialFragment: SpeechFragment = {
 	emotion: 'neutral',
 	speed: settings.speed,
 	section: 1,
-	number: 0,
 	content: '',
 };
 
@@ -32,7 +30,6 @@ export function scriptToSpeechFragments( scriptList: ScriptItem[] )
 	let current: SpeechFragment = {
 		...previousFragment,
 	};
-	// let fragmentSize: number = 0;
 	let content: string = '';
 	let withText: boolean = false;
 	let inEmphasis: boolean = false;
@@ -45,20 +42,17 @@ export function scriptToSpeechFragments( scriptList: ScriptItem[] )
 			content,
 		};
 		
-		fragment.number++;
 		previousFragment = fragment;
-		// fragmentSize = 0;
 		withText = false;
 		content = '';
 		fragments.push( fragment );
 	};
 	
-	// TODO: fragmentSize оказывается 0, т. к. paragraph был в предыдущем фрагменте
 	const addToFragment = ( properties: Partial<SpeechFragment> ) =>
 	{
 		if (
 			!isPropertiesChanged( current, properties )
-			|| !withText //( fragmentSize === 0 )
+			|| !withText
 		)
 		{
 			Object.assign( current, properties );
@@ -73,8 +67,6 @@ export function scriptToSpeechFragments( scriptList: ScriptItem[] )
 			...properties,
 		};
 	};
-	
-	debugger; // TODO: Убрать
 	
 	for ( const item of scriptList )
 	{
@@ -96,7 +88,6 @@ export function scriptToSpeechFragments( scriptList: ScriptItem[] )
 					addToFragment( {
 						voice: settings.voices.titles,
 					} );
-					// fragmentSize += item.size;
 					content += pause( settings.titlePause );
 				}
 				
@@ -108,7 +99,6 @@ export function scriptToSpeechFragments( scriptList: ScriptItem[] )
 					addToFragment( {
 						voice: settings.voices.narrator,
 					} );
-					// fragmentSize += item.size;
 					content += paragraph();
 				}
 				

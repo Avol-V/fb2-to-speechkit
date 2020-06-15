@@ -8,7 +8,7 @@ import { scriptToSpeechFragments } from './lib/script-to-speech-fragments';
 
 const writeFile = promisify( writeFileCallback );
 
-const inputPath = pathResolve( process.cwd(), '_test/test3.fb2' );
+const inputPath = pathResolve( process.cwd(), '_test/book.fb2' );
 const outputPath = pathResolve( process.cwd(), '_test/book.json' );
 
 const script = new Script();
