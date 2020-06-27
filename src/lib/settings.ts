@@ -1,4 +1,4 @@
-import * as userSettings from '../settings.json';
+import { execCommand } from './exec-command';
 
 export type SpeechVoice =
 	| 'oksana' // F, RU
@@ -47,6 +47,9 @@ export type Transforms = {
 };
 
 export type Settings = {
+	iamToken: string;
+	folderId: string;
+	iamTokenCmd: string;
 	language: SpeechLanguage;
 	voices: {
 		narrator: SpeechVoice;
@@ -58,9 +61,13 @@ export type Settings = {
 	defaultPause: number;
 	titlePause: number;
 	transforms: Transforms;
+	concatTool: 'ffmpeg' | 'sox';
 };
 
 const defaultSettings: Settings = {
+	iamToken: '',
+	folderId: '',
+	iamTokenCmd: 'yc iam create-token',
 	language: 'ru-RU',
 	voices: {
 		narrator: 'oksana',
@@ -79,12 +86,26 @@ const defaultSettings: Settings = {
 		replaceDinkus: '-',
 		removeSeparators: true,
 	},
+	concatTool: 'ffmpeg',
 };
 
-export const settings: Readonly<Settings> = merge(
-	defaultSettings,
-	userSettings as Settings,
-);
+export let settings: Readonly<Settings> = defaultSettings;
+
+export async function setSettings( userSettings: Partial<Settings> ): Promise<void>
+{
+	settings = merge(
+		settings,
+		userSettings as Settings,
+	);
+	
+	if (
+		!settings.iamToken
+		&& settings.iamTokenCmd
+	)
+	{
+		(settings as Settings).iamToken = await execCommand( settings.iamTokenCmd );
+	}
+};
 
 function merge<T extends Record<string, unknown>>( ...objects: T[] ): T
 {
