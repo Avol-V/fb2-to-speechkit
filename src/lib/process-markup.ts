@@ -17,7 +17,7 @@ export function processMarkup(
 	{
 		const text = prepareText( markup.value );
 		
-		if ( /^ *[-–—] /.test( text ) )
+		if ( /^ *[-–—](?![\r\n])\s/.test( text ) )
 		{
 			script.asDialogue();
 		}
