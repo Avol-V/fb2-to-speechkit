@@ -5,11 +5,10 @@ import {
 import { resolve as pathResolve } from 'path';
 import { promisify } from 'util';
 import { readFb2File } from './lib/read-fb2-file';
-// import { processSection } from './lib/process-section';
 import { Script } from './lib/script';
 import { scriptToSpeechFragments } from './lib/script-to-speech-fragments';
 import { setSettings } from './lib/settings';
-// import { speechFragmentsToAudio } from './lib/speech-fragments-to-audio';
+import { speechFragmentsToAudio } from './lib/speech-fragments-to-audio';
 import { processMarkup } from './lib/process-markup';
 
 const writeFile = promisify( writeFileCallback );
@@ -41,16 +40,14 @@ async function main()
 			
 			if ( result.type === 'done' )
 			{
-				const fragments = scriptToSpeechFragments( script.getList() );
-				
-				console.log( script.getNotes() );
+				const fragments = scriptToSpeechFragments( script );
 				
 				writeFile( outputPath, JSON.stringify( fragments, null, '\t' ), 'utf8' )
 					.then( () => console.log( 'Done.' ) );
 				
-				// speechFragmentsToAudio( fragments )
-				// 	.then( () => console.log( 'Done.' ) )
-				// 	.catch( ( error ) => console.error( error ) );
+				speechFragmentsToAudio( fragments )
+					.then( () => console.log( 'Done.' ) )
+					.catch( ( error ) => console.error( error ) );
 				
 				return;
 			}

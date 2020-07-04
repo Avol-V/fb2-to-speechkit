@@ -63,11 +63,13 @@ function openTag(
 		case 'section':
 			script.breakSection();
 			
-			const id = attributes.get( 'id' );
-			
-			if ( id )
 			{
-				script.openNote( id );
+				const id = attributes.get( 'id' );
+				
+				if ( id )
+				{
+					script.openNote( id );
+				}
 			}
 			
 			break;
@@ -98,6 +100,29 @@ function openTag(
 		
 		case 'strong':
 			script.openStrong();
+			break;
+		
+		case 'a':
+			{
+				const type = attributes.get( 'type' );
+				
+				if (
+					type
+					&& ( type === 'note' )
+				)
+				{
+					for ( const [attribute, value] of attributes )
+					{
+						if ( /\b:href$/.test( attribute ) )
+						{
+							script.addNote( value.substring( 1 ) );
+							script.startIgnoreContent();
+							break;
+						}
+					}
+				}
+			}
+			
 			break;
 		
 		default:
@@ -139,6 +164,14 @@ function closeTag(
 		
 		case 'strong':
 			script.closeStrong();
+			break;
+		
+		case 'a':
+			if ( script.isIgnoreContent() )
+			{
+				script.stopIgnoreContent();
+			}
+			
 			break;
 		
 		default:

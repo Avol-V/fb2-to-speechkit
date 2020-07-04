@@ -14,6 +14,9 @@ export async function concatAudioFilesFfmpeg( baseDir: string, files: string[], 
 	const child = spawn(
 		'ffmpeg',
 		[
+			'-nostats',
+			'-loglevel',
+			'warning',
 			'-f',
 			'concat',
 			'-safe',

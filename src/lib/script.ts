@@ -36,6 +36,10 @@ export type ScriptDialogueItem = {
 	number: number;
 	closing: boolean;
 };
+export type ScriptNoteItem = {
+	type: 'note';
+	name: string;
+};
 export type ScriptBlockItem =
 	| ScriptParagraphItem
 	| ScriptTitleItem
@@ -48,6 +52,7 @@ export type ScriptItem =
 	| ScriptStrongItem
 	| ScriptPauseItem
 	| ScriptDialogueItem
+	| ScriptNoteItem
 ;
 
 export class Script
@@ -68,6 +73,7 @@ export class Script
 	private _lastDialogue: ScriptDialogueItem | null = null;
 	private _sectionSize: number = 0;
 	private _currentNote: string = '';
+	private _ignoreContent: boolean = false;
 	
 	constructor()
 	{
@@ -92,6 +98,11 @@ export class Script
 	
 	openBody( notes: boolean = false ): void
 	{
+		if ( this._ignoreContent )
+		{
+			return;
+		}
+		
 		this._state.inBody = true;
 		
 		if ( notes )
@@ -102,6 +113,11 @@ export class Script
 	
 	closeBody(): void
 	{
+		if ( this._ignoreContent )
+		{
+			return;
+		}
+		
 		this._state.inBody = false;
 		this._state.inNotes = false;
 		this._closeAllContentTags();
@@ -109,7 +125,10 @@ export class Script
 	
 	openNote( name: string ): void
 	{
-		if ( !this.isInNotes() )
+		if (
+			this._ignoreContent
+			|| !this.isInNotes()
+		)
 		{
 			return;
 		}
@@ -119,13 +138,19 @@ export class Script
 	
 	closeNote(): void
 	{
+		if ( this._ignoreContent )
+		{
+			return;
+		}
+		
 		this._currentNote = '';
 	}
 	
 	addText( text: string ): void
 	{
 		if (
-			!this.isInBody()
+			this._ignoreContent
+			|| !this.isInBody()
 			|| (
 				!this._state.inParagraph
 				&& !this._state.inSubtitle
@@ -144,7 +169,10 @@ export class Script
 	
 	openParagraph(): void
 	{
-		if ( !this.isInBody() )
+		if (
+			this._ignoreContent
+			|| !this.isInBody()
+		)
 		{
 			return;
 		}
@@ -165,7 +193,10 @@ export class Script
 	
 	closeParagraph(): void
 	{
-		if ( !this._state.inParagraph )
+		if (
+			this._ignoreContent
+			|| !this._state.inParagraph
+		)
 		{
 			return;
 		}
@@ -181,7 +212,10 @@ export class Script
 	
 	openTitle(): void
 	{
-		if ( !this.isInBody() )
+		if (
+			this._ignoreContent
+			|| !this.isInBody()
+		)
 		{
 			return;
 		}
@@ -201,22 +235,30 @@ export class Script
 	
 	closeTitle(): void
 	{
-		if ( this._state.inTitle )
+		if (
+			this._ignoreContent
+			|| !this._state.inTitle
+		)
 		{
-			this._closeAllContentTags();
-			
-			this._state.inTitle = false;
-			this._pushItem( {
-				type: 'title',
-				size: 0,
-				closing: true,
-			} );
+			return;
 		}
+		
+		this._closeAllContentTags();
+		
+		this._state.inTitle = false;
+		this._pushItem( {
+			type: 'title',
+			size: 0,
+			closing: true,
+		} );
 	}
 	
 	openSubtitle(): void
 	{
-		if ( !this.isInBody() )
+		if (
+			this._ignoreContent
+			|| !this.isInBody()
+		)
 		{
 			return;
 		}
@@ -236,20 +278,28 @@ export class Script
 	
 	closeSubtitle(): void
 	{
-		if ( this._state.inSubtitle )
+		if (
+			this._ignoreContent
+			|| !this._state.inSubtitle
+		)
 		{
-			this._state.inSubtitle = false;
-			this._pushItem( {
-				type: 'title',
-				size: 0,
-				closing: true,
-			} );
+			return;
 		}
+		
+		this._state.inSubtitle = false;
+		this._pushItem( {
+			type: 'title',
+			size: 0,
+			closing: true,
+		} );
 	}
 	
 	addBlockSize( size: number ): void
 	{
-		if ( !this.isInBody() )
+		if (
+			this._ignoreContent
+			|| !this.isInBody()
+		)
 		{
 			return;
 		}
@@ -265,7 +315,8 @@ export class Script
 	breakSection(): void
 	{
 		if (
-			!this.isInBody()
+			this._ignoreContent
+			|| !this.isInBody()
 			|| this.isInNotes()
 			|| ( this._sectionSize < MIN_SECTION_SIZE )
 		)
@@ -286,7 +337,8 @@ export class Script
 	openEmphasis(): void
 	{
 		if (
-			!this.isInBody()
+			this._ignoreContent
+			|| !this.isInBody()
 			|| this._state.inEmphasis
 		)
 		{
@@ -302,7 +354,10 @@ export class Script
 	
 	closeEmphasis(): void
 	{
-		if ( !this._state.inEmphasis )
+		if (
+			this._ignoreContent
+			|| !this._state.inEmphasis
+		)
 		{
 			return;
 		}
@@ -317,7 +372,8 @@ export class Script
 	openStrong(): void
 	{
 		if (
-			!this.isInBody()
+			this._ignoreContent
+			|| !this.isInBody()
 			|| this._state.inStrong
 		)
 		{
@@ -333,7 +389,10 @@ export class Script
 	
 	closeStrong(): void
 	{
-		if ( !this._state.inStrong )
+		if (
+			this._ignoreContent
+			|| !this._state.inStrong
+		)
 		{
 			return;
 		}
@@ -347,7 +406,10 @@ export class Script
 	
 	asDialogue(): void
 	{
-		if ( !this._atBeginningOfParagraph() )
+		if (
+			this._ignoreContent
+			|| !this._atBeginningOfParagraph()
+		)
 		{
 			return;
 		}
@@ -365,7 +427,8 @@ export class Script
 	stopDialogue(): void
 	{
 		if (
-			!this._lastDialogue
+			this._ignoreContent
+			|| !this._lastDialogue
 			|| !this._atBeginningOfParagraph()
 		)
 		{
@@ -382,10 +445,43 @@ export class Script
 	
 	addPause( seconds?: number ): void
 	{
+		if ( this._ignoreContent )
+		{
+			return;
+		}
+		
 		this._pushItem( {
 			type: 'pause',
 			seconds,
 		} );
+	}
+	
+	addNote( name: string ): void
+	{
+		if ( this._ignoreContent )
+		{
+			return;
+		}
+		
+		this._pushItem( {
+			type: 'note',
+			name,
+		} );
+	}
+	
+	startIgnoreContent(): void
+	{
+		this._ignoreContent = true;
+	}
+	
+	stopIgnoreContent(): void
+	{
+		this._ignoreContent = false;
+	}
+	
+	isIgnoreContent(): boolean
+	{
+		return this._ignoreContent;
 	}
 	
 	getList(): ScriptItem[]
@@ -393,9 +489,9 @@ export class Script
 		return this._list;
 	}
 	
-	getNotes()
+	getNote( name: string ): ScriptItem[]
 	{
-		return this._notes;
+		return this._notes.get( name ) || [];
 	}
 	
 	private _atBeginningOfParagraph(): boolean

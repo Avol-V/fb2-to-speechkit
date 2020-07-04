@@ -2,6 +2,7 @@ import * as Eyo from 'eyo-kernel';
 
 import { settings } from './settings';
 import { replacers } from './replacers';
+import { escapeXml } from './utils/escape-xml';
 
 const yoficator = new Eyo();
 
@@ -35,7 +36,7 @@ export function prepareText( text: string ): string
 		}
 	}
 	
-	return output;
+	return escapeXml( output );
 }
 
 /**

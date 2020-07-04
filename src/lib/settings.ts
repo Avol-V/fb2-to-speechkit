@@ -54,32 +54,38 @@ export type Settings = {
 	iamToken: string;
 	folderId: string;
 	iamTokenCmd: string;
+	concatTool: 'ffmpeg' | 'sox';
 	language: SpeechLanguage;
 	voices: {
 		narrator: SpeechVoice;
 		companion1: SpeechVoice;
 		companion2: SpeechVoice;
 		titles: SpeechVoice;
+		notes: SpeechVoice;
 	};
 	speed: number;
+	notesSpeed: number;
 	defaultPause: number;
 	titlePause: number;
 	transforms: Transforms;
-	concatTool: 'ffmpeg' | 'sox';
+	readNotes: boolean;
 };
 
 const defaultSettings: Settings = {
 	iamToken: '',
 	folderId: '',
 	iamTokenCmd: 'yc iam create-token',
+	concatTool: 'ffmpeg',
 	language: 'ru-RU',
 	voices: {
 		narrator: 'oksana',
 		companion1: 'zahar',
 		companion2: 'omazh',
 		titles: 'ermil',
+		notes: 'ermil',
 	},
 	speed: 1,
+	notesSpeed: 1.2,
 	defaultPause: 1,
 	titlePause: 3,
 	transforms: {
@@ -91,7 +97,7 @@ const defaultSettings: Settings = {
 		removeSeparators: true,
 		normalizeWhitespace: true,
 	},
-	concatTool: 'ffmpeg',
+	readNotes: true,
 };
 
 export let settings: Readonly<Settings> = defaultSettings;

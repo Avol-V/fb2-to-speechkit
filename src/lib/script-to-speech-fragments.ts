@@ -2,7 +2,7 @@ import { settings } from './settings';
 import { pause } from './markup/pause';
 import { paragraph } from './markup/paragraph';
 
-import type { ScriptItem } from './script';
+import type { Script } from './script';
 import type { SpeechEmotion, SpeechLanguage, SpeechVoice } from './settings';
 
 export type SpeechFragment = {
@@ -23,7 +23,7 @@ const initialFragment: SpeechFragment = {
 	content: '',
 };
 
-export function scriptToSpeechFragments( scriptList: ScriptItem[] )
+export function scriptToSpeechFragments( script: Script )
 {
 	const fragments: SpeechFragment[] = [];
 	let previousFragment: SpeechFragment = initialFragment;
@@ -68,7 +68,7 @@ export function scriptToSpeechFragments( scriptList: ScriptItem[] )
 		};
 	};
 	
-	for ( const item of scriptList )
+	for ( const item of script.getList() )
 	{
 		switch ( item.type )
 		{
@@ -77,13 +77,7 @@ export function scriptToSpeechFragments( scriptList: ScriptItem[] )
 				break;
 			
 			case 'title':
-				if ( item.closing )
-				{
-					addToFragment( {
-						voice: settings.voices.narrator,
-					} );
-				}
-				else
+				if ( !item.closing )
 				{
 					addToFragment( {
 						voice: settings.voices.titles,
@@ -169,6 +163,34 @@ export function scriptToSpeechFragments( scriptList: ScriptItem[] )
 				withText = true;
 				break;
 			
+			case 'note':
+				if ( settings.readNotes )
+				{
+					const noteContent = processNote( item.name, script );
+					
+					if ( noteContent.length === 0 )
+					{
+						break;
+					}
+					
+					const savedState = {
+						voice: current.voice,
+						speed: current.speed,
+					};
+					
+					addToFragment( {
+						voice: settings.voices.notes,
+						speed: settings.notesSpeed,
+					} );
+					
+					content += paragraph() + noteContent;
+					withText = true;
+					
+					addToFragment( savedState );
+				}
+				
+				break;
+			
 			default:
 				{
 					const unknownItem: never = item;
@@ -200,4 +222,38 @@ function isPropertiesChanged(
 	}
 	
 	return false;
+}
+
+function processNote( name: string, script: Script ): string
+{
+	const list = script.getNote( name );
+	
+	if ( list.length === 0 )
+	{
+		return '';
+	}
+	
+	return list.reduce(
+		( result, item ) =>
+		{
+			if ( item.type === 'text' )
+			{
+				return result + item.text;
+			}
+			
+			if (
+				(
+					( item.type === 'title' )
+					|| ( item.type === 'paragraph' )
+				)
+				&& item.closing
+			)
+			{
+				return result + paragraph();
+			}
+			
+			return result;
+		},
+		'',
+	).trim();
 }

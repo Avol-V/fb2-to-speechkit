@@ -23,7 +23,7 @@ export async function speechFragmentsToAudio( fragments: SpeechFragment[] )
 		// sampleRateHertz: 48000,
 	};
 	
-	const workDir = pathResolve( process.cwd(), '_test/Dzhonston_Asoka/' );
+	const workDir = pathResolve( process.cwd(), '_test/audio/' );
 	let lastSection = 1;
 	let partIndex = 0;
 	let sectionName = String( lastSection ).padStart( 3, '0' );
@@ -40,6 +40,11 @@ export async function speechFragmentsToAudio( fragments: SpeechFragment[] )
 	
 	for ( const { section, content, ...speechOptions } of fragments )
 	{
+		if ( content.trim().length === 0 )
+		{
+			continue;
+		}
+		
 		if ( section !== lastSection )
 		{
 			await writeSection();
