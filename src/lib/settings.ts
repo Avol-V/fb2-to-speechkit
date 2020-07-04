@@ -44,6 +44,10 @@ export type Transforms = {
 	 * Remove different separators, like a set of "=" in a row
 	 */
 	removeSeparators: boolean;
+	/**
+	 * Turns all whitespace into a single space
+	 */
+	normalizeWhitespace: boolean;
 };
 
 export type Settings = {
@@ -73,7 +77,7 @@ const defaultSettings: Settings = {
 		narrator: 'oksana',
 		companion1: 'zahar',
 		companion2: 'omazh',
-		titles: 'zahar',
+		titles: 'ermil',
 	},
 	speed: 1,
 	defaultPause: 1,
@@ -85,6 +89,7 @@ const defaultSettings: Settings = {
 		removeFootnotesFromText: false,
 		replaceDinkus: '-',
 		removeSeparators: true,
+		normalizeWhitespace: true,
 	},
 	concatTool: 'ffmpeg',
 };

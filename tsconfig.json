@@ -23,7 +23,6 @@
 		"allowSyntheticDefaultImports": false,
 		"esModuleInterop": false,
 		
-		"noEmitOnError": true,
 		"newLine": "LF",
 		"removeComments": true,
 		"declaration": false,

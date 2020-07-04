@@ -1,0 +1,1 @@
+type TextDecoder = never;

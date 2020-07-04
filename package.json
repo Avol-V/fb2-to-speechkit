@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "eyo-kernel": "^2.5.6",
+    "sax-wasm": "^1.4.5",
     "xml-flow": "^1.0.4"
   },
   "devDependencies": {

@@ -19,4 +19,5 @@ export const replacers: {
 	convertRomeToNumber: [/\b(?!I\s+[a-z])[IVXLCDM]+\b/g, numberFromRome],
 	replaceDinkus: [/^\s*(?:\*\s*){3,}$/, settings.transforms.replaceDinkus || ''],
 	removeSeparators: [/^\s*([#=_-])\s*(?:\1\s*)+$/, '-'],
+	normalizeWhitespace: [/\s{2,}/, ' '],
 };

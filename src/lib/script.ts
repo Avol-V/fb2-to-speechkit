@@ -8,6 +8,7 @@ export type ScriptParagraphItem = {
 	type: 'paragraph';
 	size: number;
 	closing: boolean;
+	inheritVoice: boolean;
 };
 export type ScriptTitleItem = {
 	type: 'title';
@@ -48,26 +49,25 @@ export type ScriptItem =
 	| ScriptPauseItem
 	| ScriptDialogueItem
 ;
-export type ScriptState = {
-	inParagraph: boolean;
-	inTitle: boolean;
-	inEmphasis: boolean;
-	inStrong: boolean;
-};
 
 export class Script
 {
 	private _list: ScriptItem[] = [];
-	private _state: ScriptState = {
+	private _notes = new Map<string, ScriptItem[]>();
+	private _state = {
 		inParagraph: false,
 		inTitle: false,
+		inSubtitle: false,
 		inEmphasis: false,
 		inStrong: false,
+		inBody: false,
+		inNotes: false,
 	};
 	private _lastSection: ScriptSectionItem;
 	private _lastBlock: ScriptBlockItem | null = null;
 	private _lastDialogue: ScriptDialogueItem | null = null;
 	private _sectionSize: number = 0;
+	private _currentNote: string = '';
 	
 	constructor()
 	{
@@ -76,64 +76,117 @@ export class Script
 			number: 1,
 		};
 		
-		this._list.push( section );
+		this._pushItem( section );
 		this._lastSection = section;
 	}
 	
-	addText( text: string )
+	isInBody(): boolean
+	{
+		return this._state.inBody;
+	}
+	
+	isInNotes(): boolean
+	{
+		return this._state.inNotes;
+	}
+	
+	openBody( notes: boolean = false ): void
+	{
+		this._state.inBody = true;
+		
+		if ( notes )
+		{
+			this._state.inNotes = true;
+		}
+	}
+	
+	closeBody(): void
+	{
+		this._state.inBody = false;
+		this._state.inNotes = false;
+		this._closeAllContentTags();
+	}
+	
+	openNote( name: string ): void
+	{
+		if ( !this.isInNotes() )
+		{
+			return;
+		}
+		
+		this._currentNote = name;
+	}
+	
+	closeNote(): void
+	{
+		this._currentNote = '';
+	}
+	
+	addText( text: string ): void
 	{
 		if (
-			!this._state.inParagraph
-			&& !this._state.inTitle
-			&& ( text === ' ' )
+			!this.isInBody()
+			|| (
+				!this._state.inParagraph
+				&& !this._state.inSubtitle
+				&& ( text === ' ' )
+			)
 		)
 		{
 			return;
 		}
 		
-		this._list.push( {
+		this._pushItem( {
 			type: 'text',
 			text,
 		} );
 	}
 	
-	openParagraph()
+	openParagraph(): void
 	{
-		this.closeParagraph();
-		this.closeTitle();
-		this.closeEmphasis();
-		this.closeStrong();
+		if ( !this.isInBody() )
+		{
+			return;
+		}
+		
+		this._closeAllContentTags();
 		
 		const paragraph: ScriptParagraphItem = {
 			type: 'paragraph',
 			size: 0,
 			closing: false,
+			inheritVoice: this._state.inTitle,
 		};
 		
 		this._lastBlock = paragraph;
-		this._list.push( paragraph );
+		this._pushItem( paragraph );
 		this._state.inParagraph = true;
 	}
 	
-	closeParagraph()
+	closeParagraph(): void
 	{
-		if ( this._state.inParagraph )
+		if ( !this._state.inParagraph )
 		{
-			this._state.inParagraph = false;
-			this._list.push( {
-				type: 'paragraph',
-				size: 0,
-				closing: true,
-			} );
+			return;
 		}
+		
+		this._state.inParagraph = false;
+		this._pushItem( {
+			type: 'paragraph',
+			size: 0,
+			closing: true,
+			inheritVoice: this._state.inTitle,
+		} );
 	}
 	
-	openTitle()
+	openTitle(): void
 	{
-		this.closeParagraph();
-		this.closeTitle();
-		this.closeEmphasis();
-		this.closeStrong();
+		if ( !this.isInBody() )
+		{
+			return;
+		}
+		
+		this._closeAllContentTags();
 		
 		const title: ScriptTitleItem = {
 			type: 'title',
@@ -142,16 +195,18 @@ export class Script
 		};
 		
 		this._lastBlock = title;
-		this._list.push( title );
+		this._pushItem( title );
 		this._state.inTitle = true;
 	}
 	
-	closeTitle()
+	closeTitle(): void
 	{
 		if ( this._state.inTitle )
 		{
+			this._closeAllContentTags();
+			
 			this._state.inTitle = false;
-			this._list.push( {
+			this._pushItem( {
 				type: 'title',
 				size: 0,
 				closing: true,
@@ -159,8 +214,46 @@ export class Script
 		}
 	}
 	
-	addBlockSize( size: number )
+	openSubtitle(): void
 	{
+		if ( !this.isInBody() )
+		{
+			return;
+		}
+		
+		this._closeAllContentTags();
+		
+		const title: ScriptTitleItem = {
+			type: 'title',
+			size: 0,
+			closing: false,
+		};
+		
+		this._lastBlock = title;
+		this._pushItem( title );
+		this._state.inSubtitle = true;
+	}
+	
+	closeSubtitle(): void
+	{
+		if ( this._state.inSubtitle )
+		{
+			this._state.inSubtitle = false;
+			this._pushItem( {
+				type: 'title',
+				size: 0,
+				closing: true,
+			} );
+		}
+	}
+	
+	addBlockSize( size: number ): void
+	{
+		if ( !this.isInBody() )
+		{
+			return;
+		}
+		
 		if ( this._lastBlock )
 		{
 			this._lastBlock.size += size;
@@ -169,9 +262,13 @@ export class Script
 		this._sectionSize += size;
 	}
 	
-	breakSection()
+	breakSection(): void
 	{
-		if ( this._sectionSize < MIN_SECTION_SIZE )
+		if (
+			!this.isInBody()
+			|| this.isInNotes()
+			|| ( this._sectionSize < MIN_SECTION_SIZE )
+		)
 		{
 			return;
 		}
@@ -183,62 +280,72 @@ export class Script
 		
 		this._lastSection = section;
 		this._sectionSize = 0;
-		this._list.push( section );
+		this._pushItem( section );
 	}
 	
-	openEmphasis()
+	openEmphasis(): void
 	{
-		if ( this._state.inEmphasis )
+		if (
+			!this.isInBody()
+			|| this._state.inEmphasis
+		)
 		{
 			return;
 		}
 		
-		this._list.push( {
+		this._pushItem( {
 			type: 'emphasis',
 			closing: false,
 		} );
 		this._state.inEmphasis = true;
 	}
 	
-	closeEmphasis()
+	closeEmphasis(): void
 	{
-		if ( this._state.inEmphasis )
-		{
-			this._state.inEmphasis = false;
-			this._list.push( {
-				type: 'emphasis',
-				closing: true,
-			} );
-		}
-	}
-	
-	openStrong()
-	{
-		if ( this._state.inStrong )
+		if ( !this._state.inEmphasis )
 		{
 			return;
 		}
 		
-		this._list.push( {
+		this._state.inEmphasis = false;
+		this._pushItem( {
+			type: 'emphasis',
+			closing: true,
+		} );
+	}
+	
+	openStrong(): void
+	{
+		if (
+			!this.isInBody()
+			|| this._state.inStrong
+		)
+		{
+			return;
+		}
+		
+		this._pushItem( {
 			type: 'strong',
 			closing: false,
 		} );
 		this._state.inStrong = true;
 	}
 	
-	closeStrong()
+	closeStrong(): void
 	{
-		if ( this._state.inStrong )
+		if ( !this._state.inStrong )
 		{
-			this._state.inStrong = false;
-			this._list.push( {
-				type: 'strong',
-				closing: true,
-			} );
+			return;
 		}
+		
+		this._state.inStrong = false;
+		this._pushItem( {
+			type: 'strong',
+			closing: true,
+		} );
 	}
 	
-	asDialogue()
+	asDialogue(): void
 	{
 		if ( !this._atBeginningOfParagraph() )
 		{
@@ -252,10 +359,10 @@ export class Script
 		} ;
 		
 		this._lastDialogue = dialogue;
-		this._list.push( dialogue );
+		this._pushItem( dialogue );
 	}
 	
-	stopDialogue()
+	stopDialogue(): void
 	{
 		if (
 			!this._lastDialogue
@@ -266,24 +373,29 @@ export class Script
 		}
 		
 		this._lastDialogue = null;
-		this._list.push( {
+		this._pushItem( {
 			type: 'dialogue',
 			number: 0,
 			closing: true,
 		} );
 	}
 	
-	addPause( seconds?: number )
+	addPause( seconds?: number ): void
 	{
-		this._list.push( {
+		this._pushItem( {
 			type: 'pause',
 			seconds,
 		} );
 	}
 	
-	getList()
+	getList(): ScriptItem[]
 	{
 		return this._list;
+	}
+	
+	getNotes()
+	{
+		return this._notes;
 	}
 	
 	private _atBeginningOfParagraph(): boolean
@@ -293,5 +405,38 @@ export class Script
 			&& this._lastBlock
 			&& ( this._lastBlock.size === 0 )
 		);
+	}
+	
+	private _pushItem( item: ScriptItem ): void
+	{
+		if ( this.isInNotes() )
+		{
+			if ( this._currentNote )
+			{
+				if ( this._notes.has( this._currentNote ) )
+				{
+					this._notes.get( this._currentNote )!.push( item );
+				}
+				else
+				{
+					this._notes.set(
+						this._currentNote,
+						[item],
+					);
+				}
+			}
+			
+			return;
+		}
+		
+		this._list.push( item );
+	}
+	
+	private _closeAllContentTags(): void
+	{
+		this.closeParagraph();
+		this.closeSubtitle();
+		this.closeEmphasis();
+		this.closeStrong();
 	}
 }

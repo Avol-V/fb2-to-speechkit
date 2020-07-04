@@ -96,9 +96,13 @@ export function scriptToSpeechFragments( scriptList: ScriptItem[] )
 			case 'paragraph':
 				if ( !item.closing )
 				{
-					addToFragment( {
-						voice: settings.voices.narrator,
-					} );
+					if ( !item.inheritVoice )
+					{
+						addToFragment( {
+							voice: settings.voices.narrator,
+						} );
+					}
+					
 					content += paragraph();
 				}
 				
