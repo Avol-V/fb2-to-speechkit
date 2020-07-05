@@ -28,7 +28,8 @@
   },
   "dependencies": {
     "eyo-kernel": "^2.5.6",
-    "sax-wasm": "^1.4.5"
+    "sax-wasm": "^1.4.5",
+    "saxes": "^5.0.1"
   },
   "devDependencies": {
     "@types/node": "^14.0.13",
