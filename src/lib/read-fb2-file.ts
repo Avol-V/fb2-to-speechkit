@@ -2,21 +2,9 @@
 
 import { createReadStream, readFile as readFileCallback } from 'fs';
 import { promisify } from 'util';
-// import * as xmlFlow from 'xml-flow';
 import { SaxEventType, SAXParser, Tag, Text, StringReader } from 'sax-wasm';
 
 const readFile = promisify( readFileCallback );
-
-// type SectionResult =
-// 	| {
-// 		done: true,
-// 		section: null,
-// 	}
-// 	| {
-// 		done: false,
-// 		section: xmlFlow.Markup,
-// 	};
-// type SectionHandler = ( error: Error | null, result: SectionResult ) => void;
 
 export type MarkupOpenTag = {
 	type: 'open';
@@ -139,61 +127,8 @@ export async function readFb2File(
 		'error',
 		( error ) =>
 		{
+			parser.end();
 			onMarkupEvent( error, doneEvent );
 		},
 	);
-	
-	
-	/* const xmlStream = xmlFlow(
-		fileStream,
-		{
-			strict: true,
-			trim: false,
-			preserveMarkup: xmlFlow.ALWAYS,
-			useArrays: xmlFlow.ALWAYS,
-			cdataAsText: true,
-		},
-	);
-	
-	xmlStream.on(
-		'tag:section',
-		( section: xmlFlow.Markup ) =>
-		{
-			onSection(
-				null,
-				{
-					done: false,
-					section,
-				},
-			);
-		},
-	);
-	
-	xmlStream.on(
-		'error',
-		( error ) =>
-		{
-			onSection(
-				error,
-				{
-					done: true,
-					section: null,
-				},
-			);
-		},
-	);
-	
-	xmlStream.on(
-		'end',
-		() =>
-		{
-			onSection(
-				null,
-				{
-					done: true,
-					section: null,
-				},
-			);
-		},
-	); */
 }

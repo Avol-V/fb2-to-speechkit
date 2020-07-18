@@ -1,6 +1,7 @@
 import { settings } from './settings';
 import { pause } from './markup/pause';
 import { paragraph } from './markup/paragraph';
+import { getTextSize } from './utils/get-text-size';
 
 import type { Script } from './script';
 import type { SpeechEmotion, SpeechLanguage, SpeechVoice } from './settings';
@@ -135,13 +136,7 @@ export function scriptToSpeechFragments( script: Script )
 				break;
 			
 			case 'dialogue':
-				if ( item.closing )
-				{
-					addToFragment( {
-						voice: settings.voices.narrator,
-					} );
-				}
-				else
+				if ( !item.closing )
 				{
 					addToFragment( {
 						voice: ( (item.number % 2) === 0 )
@@ -160,7 +155,7 @@ export function scriptToSpeechFragments( script: Script )
 			
 			case 'text':
 				content += item.text;
-				withText = true;
+				withText = withText || ( getTextSize( item.text ) !== 0 );
 				break;
 			
 			case 'note':
@@ -184,7 +179,7 @@ export function scriptToSpeechFragments( script: Script )
 					} );
 					
 					content += paragraph() + noteContent;
-					withText = true;
+					withText = withText || ( getTextSize( noteContent ) !== 0 );
 					
 					addToFragment( savedState );
 				}
