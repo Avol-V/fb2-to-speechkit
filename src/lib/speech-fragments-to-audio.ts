@@ -1,7 +1,12 @@
 import {
 	writeFile as writeFileCallback,
+	readdir as readDirCallback,
+	mkdir as mkDirCallback,
 } from 'fs';
-import { resolve as pathResolve } from 'path';
+import {
+	resolve as pathResolve,
+	basename,
+} from 'path';
 import { promisify } from 'util';
 import { speechKit } from './speech-kit';
 import type { Options } from './speech-kit';
@@ -10,30 +15,50 @@ import type { SpeechFragment } from './script-to-speech-fragments';
 import { concatAudioFiles } from './concat-audio-files';
 
 const writeFile = promisify( writeFileCallback );
+const readDir = promisify( readDirCallback );
+const mkDir = promisify( mkDirCallback );
 
 const MAX_CONTENT_LENGTH = 4500;
+const AUDIO_DIR_NAME = 'audio';
+const PARTS_DIR_NAME = 'parts';
 
-export async function speechFragmentsToAudio( fragments: SpeechFragment[] )
+export async function speechFragmentsToAudio(
+	fragments: SpeechFragment[],
+	baseDir: string,
+)
 {
+	const continueFromPart = await findLastPart( baseDir ).catch( () => '' );
+	
 	const options: Options = {
 		iamToken: settings.iamToken,
 		folderId: settings.folderId,
 		format: 'oggopus',
-		// format: 'lpcm',
-		// sampleRateHertz: 48000,
 	};
 	
-	const workDir = pathResolve( process.cwd(), '_test/audio/' );
 	let lastSection = 1;
 	let partIndex = 0;
 	let sectionName = String( lastSection ).padStart( 3, '0' );
 	let sectionFiles: string[] = [];
+	let skip: boolean = continueFromPart.length !== 0;
+	
+	if ( !skip )
+	{
+		await mkDir( pathResolve( baseDir, AUDIO_DIR_NAME ) );
+		await mkDir( pathResolve( baseDir, PARTS_DIR_NAME ) );
+	}
 	
 	const writeSection = async () =>
 	{
-		if ( sectionFiles )
+		if (
+			!skip
+			&& ( sectionFiles.length !== 0 )
+		)
 		{
-			await concatAudioFiles( workDir, sectionFiles, sectionName + '.ogg' );
+			await concatAudioFiles(
+				baseDir,
+				sectionFiles,
+				`${AUDIO_DIR_NAME}/${sectionName}.ogg`,
+			);
 			console.log( 'Section done: ', sectionName );
 		}
 	};
@@ -60,18 +85,28 @@ export async function speechFragmentsToAudio( fragments: SpeechFragment[] )
 		{
 			partIndex++;
 			
+			const partName = `${sectionName}-${String( partIndex ).padStart( 4, '0' )}`;
+			const fileName = `${PARTS_DIR_NAME}/${partName}.ogg`;
+			
+			sectionFiles.push( fileName );
+			
+			if ( skip )
+			{
+				if ( partName === continueFromPart )
+				{
+					skip = false;
+				}
+				
+				continue;
+			}
+			
 			const data = await speechKit( {
 				...options,
 				...speechOptions,
 				ssml: `<speak>${part}</speak>`,
 			} );
 			
-			const partName = `${sectionName}-${String( partIndex ).padStart( 4, '0' )}`;
-			const fileName = `parts/${partName}.ogg`;
-			
-			sectionFiles.push( fileName );
-			
-			await writeFile( pathResolve( workDir, fileName ), data );
+			await writeFile( pathResolve( baseDir, fileName ), data );
 			
 			console.log( 'Fragment', partName );
 		}
@@ -105,4 +140,15 @@ function splitContent( text: string ): string[]
 	parts.push( content );
 	
 	return parts;
+}
+
+async function findLastPart( baseDir: string )
+{
+	const files = (
+		await readDir( pathResolve( baseDir, PARTS_DIR_NAME ) )
+	)
+		.filter( ( file ) => file.endsWith( '.ogg' ) )
+		.sort();
+	
+	return basename( files[files.length - 1], '.ogg' );
 }

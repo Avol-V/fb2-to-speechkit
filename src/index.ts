@@ -1,29 +1,50 @@
 import {
 	writeFile as writeFileCallback,
 	readFile as readFileCallback,
+	mkdir as mkDirCallback,
+	access as accessCallback,
 } from 'fs';
-import { resolve as pathResolve } from 'path';
+import {
+	resolve as pathResolve,
+	parse as pathParse,
+} from 'path';
 import { promisify } from 'util';
 import { readFb2File } from './lib/read-fb2-file';
 import { Script } from './lib/script';
 import { scriptToSpeechFragments } from './lib/script-to-speech-fragments';
-import { setSettings } from './lib/settings';
+import { setSettings, Settings } from './lib/settings';
 import { speechFragmentsToAudio } from './lib/speech-fragments-to-audio';
 import { processMarkup } from './lib/process-markup';
 
 const writeFile = promisify( writeFileCallback );
 const readFile = promisify( readFileCallback );
+const mkDir = promisify( mkDirCallback );
+const access = promisify( accessCallback );
 
-main();
-
-async function main()
+export async function main( inputPath: string, userSettings: Settings ): Promise<void>
 {
-	const userSettings = JSON.parse( await readFile( pathResolve( process.cwd(), 'settings.json' ), 'utf8' ) );
-	
 	await setSettings( userSettings );
 	
-	const inputPath = pathResolve( process.cwd(), '_test/test4.fb2' );
-	const outputPath = pathResolve( process.cwd(), '_test/book.json' );
+	const parsedInputPath = pathParse( inputPath );
+	const outputDir = pathResolve( parsedInputPath.dir, parsedInputPath.name );
+	const outputJson = pathResolve( outputDir, 'book.json' );
+	
+	const continueParsing = await access( outputJson )
+		.then( () => true )
+		.catch( () => false );
+	
+	if ( continueParsing )
+	{
+		const fragments = JSON.parse( await readFile( outputJson, 'utf8' ) );
+		
+		speechFragmentsToAudio( fragments, outputDir )
+			.then( () => console.log( 'Done.' ) )
+			.catch( ( error ) => console.error( error ) );
+		
+		return;
+	}
+	
+	await mkDir( outputDir );
 	
 	const script = new Script();
 	
@@ -42,10 +63,10 @@ async function main()
 			{
 				const fragments = scriptToSpeechFragments( script );
 				
-				writeFile( outputPath, JSON.stringify( fragments, null, '\t' ), 'utf8' )
-					.then( () => console.log( 'Done.' ) );
+				writeFile( outputJson, JSON.stringify( fragments, null, '\t' ), 'utf8' )
+					.then( () => console.log( 'JSON Done.' ) );
 				
-				speechFragmentsToAudio( fragments )
+				speechFragmentsToAudio( fragments, outputDir )
 					.then( () => console.log( 'Done.' ) )
 					.catch( ( error ) => console.error( error ) );
 				
