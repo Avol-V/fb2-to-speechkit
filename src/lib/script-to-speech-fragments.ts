@@ -1,6 +1,7 @@
 import { settings } from './settings';
 import { pause } from './markup/pause';
 import { paragraph } from './markup/paragraph';
+import { sentence } from './markup/sentence';
 import { getTextSize } from './utils/get-text-size';
 
 import type { Script } from './script';
@@ -148,9 +149,33 @@ export function scriptToSpeechFragments( script: Script )
 				break;
 			
 			case 'pause':
-				content += pause(
-					item.seconds ? item.seconds : settings.defaultPause,
-				);
+				if ( !item.as )
+				{
+					content += pause(
+						item.seconds ? item.seconds : settings.defaultPause,
+					);
+				}
+				else
+				{
+					switch ( item.as )
+					{
+						case 'title':
+							content += pause( settings.titlePause );
+							break;
+						
+						case 'paragraph':
+							content += paragraph();
+							break;
+						
+						case 'sentence':
+							content += sentence();
+							break;
+						
+						default:
+							break;
+					}
+				}
+				
 				break;
 			
 			case 'text':

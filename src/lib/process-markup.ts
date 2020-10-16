@@ -79,10 +79,13 @@ function openTag(
 			script.openTitle();
 			break;
 		
-		
 		case 'subtitle':
 			script.breakSection();
 			script.openSubtitle();
+			break;
+		
+		case 'epigraph':
+			script.openEpigraph();
 			break;
 		
 		case 'p':
@@ -151,6 +154,10 @@ function closeTag(
 		
 		case 'subtitle':
 			script.closeSubtitle();
+			break;
+		
+		case 'epigraph':
+			script.closeEpigraph();
 			break;
 		
 		case 'p':

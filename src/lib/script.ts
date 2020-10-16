@@ -27,9 +27,10 @@ export type ScriptTextItem = {
 	type: 'text';
 	text: string;
 };
-export type ScriptPauseItem = {
+export type ScriptPauseItem ={
 	type: 'pause';
 	seconds?: number;
+	as?: 'title' | 'paragraph' | 'sentence';
 };
 export type ScriptDialogueItem = {
 	type: 'dialogue';
@@ -291,6 +292,42 @@ export class Script
 			type: 'title',
 			size: 0,
 			closing: true,
+		} );
+	}
+	
+	openEpigraph(): void
+	{
+		if (
+			this._ignoreContent
+			|| !this.isInBody()
+			|| (
+				this._lastBlock
+				&& this._lastBlock.type === 'title'
+			)
+		)
+		{
+			return;
+		}
+		
+		this._pushItem( {
+			type: 'pause',
+			as: 'title',
+		} );
+	}
+	
+	closeEpigraph(): void
+	{
+		if (
+			this._ignoreContent
+			|| !this.isInBody()
+		)
+		{
+			return;
+		}
+		
+		this._pushItem( {
+			type: 'pause',
+			as: 'paragraph',
 		} );
 	}
 	
