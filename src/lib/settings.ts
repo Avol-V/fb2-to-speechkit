@@ -48,6 +48,14 @@ export type Transforms = {
 	 * Turns all whitespace into a single space
 	 */
 	normalizeWhitespace: boolean;
+	/**
+	 * Remove broken unicode character "�" from text
+	 */
+	removeBrokenChars: boolean;
+	/**
+	 * Replace non-breaking space with regular space
+	 */
+	replaceNbSp: boolean;
 };
 
 export type Settings = {
@@ -96,6 +104,8 @@ const defaultSettings: Settings = {
 		replaceDinkus: '-',
 		removeSeparators: true,
 		normalizeWhitespace: true,
+		removeBrokenChars: true,
+		replaceNbSp: true,
 	},
 	readNotes: true,
 };

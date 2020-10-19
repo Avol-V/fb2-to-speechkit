@@ -14,10 +14,12 @@ export const replacers: {
 		string | ( ( value: string, ...args: unknown[] ) => string )
 	]
 } = {
+	removeBrokenChars: [/�/g, ''],
 	removeFootnotesFromText: [/\[\d+\]/g, ''],
 	convertEllipsisToDots: [/…/g, '...'],
 	convertRomeToNumber: [/\b(?!I\s+[a-z])[IVXLCDM]+\b/g, numberFromRome],
 	replaceDinkus: [/^\s*(?:\*\s*){3,}$/, settings.transforms.replaceDinkus || ''],
 	removeSeparators: [/^\s*([#=_-])\s*(?:\1\s*)+$/, '-'],
+	replaceNbSp: [' ', ' '],
 	normalizeWhitespace: [/\s{2,}/, ' '],
 };

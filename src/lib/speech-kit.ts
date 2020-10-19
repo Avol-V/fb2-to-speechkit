@@ -71,7 +71,15 @@ export function speechKit( options: Options ): Promise<Buffer>
 							{
 								reject(
 									new Error(
-										`${response.statusCode} ${response.statusMessage}: ${data.toString( 'utf8' )}`
+										`${
+											response.statusCode
+										} ${
+											response.statusMessage
+										}: ${
+											data.toString( 'utf8' )
+										}\n"${
+											body
+										}"`
 									)
 								);
 							}

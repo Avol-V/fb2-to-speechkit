@@ -15,7 +15,7 @@ export function processMarkup(
 {
 	if ( markup.type === 'text' )
 	{
-		const text = prepareText( markup.value.replace( /�/g, '' ) );
+		const text = prepareText( markup.value );
 		
 		if ( /^ *[-–—](?![\r\n])\s/.test( text ) )
 		{
