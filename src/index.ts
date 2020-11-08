@@ -27,6 +27,7 @@ export async function main( inputPath: string, userSettings: Settings ): Promise
 	
 	const parsedInputPath = pathParse( inputPath );
 	const outputDir = pathResolve( parsedInputPath.dir, parsedInputPath.name );
+	const outputImagesDir = pathResolve( outputDir, 'images' );
 	const outputJson = pathResolve( outputDir, 'book.json' );
 	
 	const continueParsing = await access( outputJson )
@@ -45,6 +46,7 @@ export async function main( inputPath: string, userSettings: Settings ): Promise
 	}
 	
 	await mkDir( outputDir );
+	await mkDir( outputImagesDir );
 	
 	const script = new Script();
 	
@@ -65,6 +67,12 @@ export async function main( inputPath: string, userSettings: Settings ): Promise
 				
 				writeFile( outputJson, JSON.stringify( fragments, null, '\t' ), 'utf8' )
 					.then( () => console.log( 'JSON Done.' ) );
+				
+				for ( const [name, data] of script.fetchImages() )
+				{
+					writeFile( `${outputImagesDir}/${name}`, data )
+						.then( () => console.log( `File "${name}" saved.` ) );
+				}
 				
 				speechFragmentsToAudio( fragments, outputDir )
 					.then( () => console.log( 'Done.' ) )

@@ -15,6 +15,13 @@ export function processMarkup(
 {
 	if ( markup.type === 'text' )
 	{
+		if ( script.isInBinary() )
+		{
+			script.addText( markup.value );
+			
+			return;
+		}
+		
 		const text = prepareText( markup.value );
 		
 		if ( /^ *[-–—](?![\r\n])\s/.test( text ) )
@@ -128,6 +135,22 @@ function openTag(
 			
 			break;
 		
+		case 'binary':
+			{
+				const id = attributes.get( 'id' );
+				const contentType = attributes.get( 'content-type' );
+				
+				if (
+					id
+					&& String( contentType ).startsWith( 'image/' )
+				)
+				{
+					script.openBinary( id );
+				}
+			}
+			
+			break;
+		
 		default:
 			break;
 	}
@@ -178,6 +201,11 @@ function closeTag(
 			{
 				script.stopIgnoreContent();
 			}
+			
+			break;
+		
+		case 'binary':
+			script.closeBinary();
 			
 			break;
 		

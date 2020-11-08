@@ -75,6 +75,9 @@ export class Script
 	private _sectionSize: number = 0;
 	private _currentNote: string = '';
 	private _ignoreContent: boolean = false;
+	private _binaryName: string | undefined;
+	private _binaryData: string = '';
+	private _images = new Map<string, Buffer>();
 	
 	constructor()
 	{
@@ -95,6 +98,11 @@ export class Script
 	isInNotes(): boolean
 	{
 		return this._state.inNotes;
+	}
+	
+	isInBinary(): boolean
+	{
+		return Boolean( this._binaryName );
 	}
 	
 	openBody( notes: boolean = false ): void
@@ -149,6 +157,14 @@ export class Script
 	
 	addText( text: string ): void
 	{
+		if ( this._binaryName )
+		{
+			console.log('--- text length:', text.length);
+			this._binaryData += text;
+			
+			return;
+		}
+		
 		if (
 			this._ignoreContent
 			|| !this.isInBody()
@@ -441,6 +457,32 @@ export class Script
 		} );
 	}
 	
+	openBinary( name: string ): void
+	{
+		if ( this._binaryName )
+		{
+			return;
+		}
+		
+		this._binaryName = name;
+	}
+	
+	closeBinary(): void
+	{
+		if ( !this._binaryName )
+		{
+			return;
+		}
+		
+		if ( this._binaryData )
+		{
+			this.addImage( this._binaryName, this._binaryData );
+		}
+		
+		this._binaryName = undefined;
+		this._binaryData = '';
+	}
+	
 	asDialogue(): void
 	{
 		if (
@@ -506,6 +548,13 @@ export class Script
 		} );
 	}
 	
+	addImage( name: string, data: string ): void
+	{
+		const binary = Buffer.from( data, 'base64' );
+		
+		this._images.set( name, binary );
+	}
+	
 	startIgnoreContent(): void
 	{
 		this._ignoreContent = true;
@@ -529,6 +578,14 @@ export class Script
 	getNote( name: string ): ScriptItem[]
 	{
 		return this._notes.get( name ) || [];
+	}
+	
+	*fetchImages(): Generator<[string, Buffer], void, void>
+	{
+		for ( const imageData of this._images )
+		{
+			yield imageData;
+		}
 	}
 	
 	private _atBeginningOfParagraph(): boolean
