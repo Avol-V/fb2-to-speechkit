@@ -41,6 +41,10 @@ export type ScriptNoteItem = {
 	type: 'note';
 	name: string;
 };
+export type ScriptImageItem = {
+	type: 'image';
+	name: string;
+};
 export type ScriptBlockItem =
 	| ScriptParagraphItem
 	| ScriptTitleItem
@@ -54,6 +58,7 @@ export type ScriptItem =
 	| ScriptPauseItem
 	| ScriptDialogueItem
 	| ScriptNoteItem
+	| ScriptImageItem
 ;
 
 export class Script
@@ -552,6 +557,19 @@ export class Script
 		const binary = Buffer.from( data, 'base64' );
 		
 		this._images.set( name, binary );
+	}
+	
+	addImageReference( name: string ): void
+	{
+		if ( this._ignoreContent )
+		{
+			return;
+		}
+		
+		this._pushItem( {
+			type: 'image',
+			name,
+		} );
 	}
 	
 	startIgnoreContent(): void

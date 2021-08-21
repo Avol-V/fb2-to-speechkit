@@ -211,6 +211,17 @@ export function scriptToSpeechFragments( script: Script )
 				
 				break;
 			
+			case 'image':
+				if ( settings.readImageAs )
+				{
+					const imageText = settings.readImageAs.replace( '{name}', item.name );
+					
+					content += paragraph() + imageText + paragraph();
+					withText = withText || ( getTextSize( imageText ) !== 0 );
+				}
+				
+				break;
+			
 			default:
 				{
 					const unknownItem: never = item;

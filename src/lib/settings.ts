@@ -77,6 +77,7 @@ export type Settings = {
 	titlePause: number;
 	transforms: Transforms;
 	readNotes: boolean;
+	readImageAs: string;
 };
 
 const defaultSettings: Settings = {
@@ -108,6 +109,7 @@ const defaultSettings: Settings = {
 		replaceNbSp: true,
 	},
 	readNotes: true,
+	readImageAs: '',
 };
 
 export let settings: Readonly<Settings> = defaultSettings;

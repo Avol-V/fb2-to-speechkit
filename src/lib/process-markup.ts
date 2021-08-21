@@ -135,6 +135,18 @@ function openTag(
 			
 			break;
 		
+		case 'image':
+			for ( const [attribute, value] of attributes )
+			{
+				if ( /\b:href$/.test( attribute ) )
+				{
+					script.addImageReference( value.substring( 1 ) );
+					break;
+				}
+			}
+			
+			break;
+		
 		case 'binary':
 			{
 				const id = attributes.get( 'id' );
