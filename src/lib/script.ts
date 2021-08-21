@@ -159,7 +159,6 @@ export class Script
 	{
 		if ( this._binaryName )
 		{
-			console.log('--- text length:', text.length);
 			this._binaryData += text;
 			
 			return;

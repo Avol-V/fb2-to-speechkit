@@ -166,5 +166,5 @@ function merge<T extends Record<string, unknown>>( ...objects: T[] ): T
 
 function isObject( object: unknown ): object is Record<string, unknown>
 {
-	return object && typeof object === 'object';
+	return object !== null && typeof object === 'object';
 }
