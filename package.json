@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "eyo-kernel": "^2.5.6",
+    "normalize-unicode-text": "0.0.1",
     "sax-wasm": "^1.4.6"
   },
   "devDependencies": {

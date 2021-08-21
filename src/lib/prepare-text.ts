@@ -3,6 +3,7 @@ import * as Eyo from 'eyo-kernel';
 import { settings } from './settings';
 import { replacers } from './replacers';
 import { escapeXml } from './utils/escape-xml';
+import { filterSymbols } from './utils/filter-symbols';
 
 const yoficator = new Eyo();
 
@@ -54,6 +55,9 @@ function applyOption(
 	{
 		case 'yoficator':
 			return yoficator.restore( text );
+		
+		case 'filterSymbols':
+			return filterSymbols( text );
 		
 		default:
 			return text;

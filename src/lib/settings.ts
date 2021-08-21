@@ -56,6 +56,10 @@ export type Transforms = {
 	 * Replace non-breaking space with regular space
 	 */
 	replaceNbSp: boolean;
+	/**
+	 * Remove or replace some symbols for save processing
+	 */
+	filterSymbols: boolean;
 };
 
 export type Settings = {
@@ -107,6 +111,7 @@ const defaultSettings: Settings = {
 		normalizeWhitespace: true,
 		removeBrokenChars: true,
 		replaceNbSp: true,
+		filterSymbols: true,
 	},
 	readNotes: true,
 	readImageAs: '',
