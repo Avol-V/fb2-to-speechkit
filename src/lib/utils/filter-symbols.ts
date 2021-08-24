@@ -1,6 +1,6 @@
 import { normalizeUnicodeText } from 'normalize-unicode-text';
 
-const WHITELIST = /^[- a-z0-9а-яё?!.,:;=+@#$%^&*~'"±<>§°£₽€®™_]$/i;
+const WHITELIST = /^[- a-z0-9а-яё?!.,:;=+@#$%^&*~'"±<>§°£₽€®™_\/]$/i;
 const REPLACE_MAP: Record<string, string> = {
 	'—': '-',
 	'–': '-',
@@ -13,6 +13,7 @@ const REPLACE_MAP: Record<string, string> = {
 	'‘': '\'',
 	'’': '\'',
 	'`': '\'',
+	'\\': '/',
 };
 
 export function filterSymbols( text: string ): string
