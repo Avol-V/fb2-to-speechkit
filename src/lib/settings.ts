@@ -90,6 +90,8 @@ export type Settings = {
 	transforms: Transforms;
 	readNotes: boolean;
 	readImageAs: string;
+	readSubAs: string;
+	readSupAs: string;
 };
 
 const defaultSettings: Settings = {
@@ -125,6 +127,8 @@ const defaultSettings: Settings = {
 	},
 	readNotes: true,
 	readImageAs: '',
+	readSubAs: '',
+	readSupAs: '',
 };
 
 export let settings: Readonly<Settings> = defaultSettings;

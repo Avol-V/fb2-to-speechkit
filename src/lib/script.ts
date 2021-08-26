@@ -23,6 +23,14 @@ export type ScriptStrongItem = {
 	type: 'strong';
 	closing: boolean;
 };
+export type ScriptSupItem = {
+	type: 'sup';
+	closing: boolean;
+};
+export type ScriptSubItem = {
+	type: 'sub';
+	closing: boolean;
+};
 export type ScriptTextItem = {
 	type: 'text';
 	text: string;
@@ -55,6 +63,8 @@ export type ScriptItem =
 	| ScriptTextItem
 	| ScriptEmphasisItem
 	| ScriptStrongItem
+	| ScriptSubItem
+	| ScriptSupItem
 	| ScriptPauseItem
 	| ScriptDialogueItem
 	| ScriptNoteItem
@@ -457,6 +467,64 @@ export class Script
 		this._state.inStrong = false;
 		this._pushItem( {
 			type: 'strong',
+			closing: true,
+		} );
+	}
+	
+	openSup(): void
+	{
+		if (
+			this._ignoreContent
+			|| !this.isInBody()
+		)
+		{
+			return;
+		}
+		
+		this._pushItem( {
+			type: 'sup',
+			closing: false,
+		} );
+	}
+	
+	closeSup(): void
+	{
+		if ( this._ignoreContent )
+		{
+			return;
+		}
+		
+		this._pushItem( {
+			type: 'sup',
+			closing: true,
+		} );
+	}
+	
+	openSub(): void
+	{
+		if (
+			this._ignoreContent
+			|| !this.isInBody()
+		)
+		{
+			return;
+		}
+		
+		this._pushItem( {
+			type: 'sub',
+			closing: false,
+		} );
+	}
+	
+	closeSub(): void
+	{
+		if ( this._ignoreContent )
+		{
+			return;
+		}
+		
+		this._pushItem( {
+			type: 'sub',
 			closing: true,
 		} );
 	}

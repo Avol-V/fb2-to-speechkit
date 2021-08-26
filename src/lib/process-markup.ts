@@ -112,6 +112,15 @@ function openTag(
 			script.openStrong();
 			break;
 		
+		case 'sub':
+			script.openSub();
+			break;
+		
+		
+		case 'sup':
+			script.openSup();
+			break;
+		
 		case 'a':
 			{
 				const type = attributes.get( 'type' );
@@ -206,6 +215,15 @@ function closeTag(
 		
 		case 'strong':
 			script.closeStrong();
+			break;
+		
+		case 'sub':
+			script.closeSub();
+			break;
+		
+		
+		case 'sup':
+			script.closeSup();
 			break;
 		
 		case 'a':

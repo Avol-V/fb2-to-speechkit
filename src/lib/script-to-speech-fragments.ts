@@ -222,6 +222,25 @@ export function scriptToSpeechFragments( script: Script )
 				
 				break;
 			
+			case 'sup':
+				if ( !item.closing && settings.readSupAs )
+				{
+					content += settings.readSupAs;
+					withText = true;
+				}
+				
+				break;
+			
+			
+			case 'sub':
+				if ( !item.closing && settings.readSubAs )
+				{
+					content += settings.readSubAs;
+					withText = true;
+				}
+				
+				break;
+			
 			default:
 				{
 					const unknownItem: never = item;
