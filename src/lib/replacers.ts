@@ -22,4 +22,6 @@ export const replacers: {
 	removeSeparators: [/^\s*([#=_-])\s*(?:\1\s*)+$/, '-'],
 	replaceNbSp: [' ', ' '],
 	normalizeWhitespace: [/\s{2,}/, ' '],
+	preventSpeechkitKopeek: [/(?<=\d)\s*к(?![a-zа-яё])|(?<![a-zа-яё])к\s*(?=\d)/gi, ',$&,'],
+	preventSpeechkitRubley: [/(?<=\d)\s*р(?![a-zа-яё])|(?<![a-zа-яё])р\s*(?=\d)/gi, ',$&,'],
 };

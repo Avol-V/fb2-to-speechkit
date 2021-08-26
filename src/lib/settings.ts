@@ -60,6 +60,14 @@ export type Transforms = {
 	 * Remove or replace some symbols for save processing
 	 */
 	filterSymbols: boolean;
+	/**
+	 * Skeechkit reads cyrillic "к" with number as "kopeek", prevent it
+	 */
+	 preventSpeechkitKopeek: boolean;
+	 /**
+	  * Skeechkit reads cyrillic "р" with number as "rubley", prevent it
+	  */
+	  preventSpeechkitRubley: boolean;
 };
 
 export type Settings = {
@@ -112,6 +120,8 @@ const defaultSettings: Settings = {
 		removeBrokenChars: true,
 		replaceNbSp: true,
 		filterSymbols: true,
+		preventSpeechkitKopeek: true,
+		preventSpeechkitRubley: true,
 	},
 	readNotes: true,
 	readImageAs: '',
