@@ -33,6 +33,8 @@ export async function speechFragmentsToAudio(
 		iamToken: settings.iamToken,
 		folderId: settings.folderId,
 		format: 'oggopus',
+		timeout: 5 * 60000,
+		retries: 3,
 	};
 	
 	let lastSection = 1;
