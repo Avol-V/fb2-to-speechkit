@@ -63,11 +63,11 @@ export type Transforms = {
 	/**
 	 * Skeechkit reads cyrillic "к" with number as "kopeek", prevent it
 	 */
-	 preventSpeechkitKopeek: boolean;
-	 /**
-	  * Skeechkit reads cyrillic "р" with number as "rubley", prevent it
-	  */
-	  preventSpeechkitRubley: boolean;
+	preventSpeechkitKopeek: boolean;
+	/**
+	 * Skeechkit reads cyrillic "р" with number as "rubley", prevent it
+	 */
+	preventSpeechkitRubley: boolean;
 };
 
 export type Settings = {
@@ -92,6 +92,7 @@ export type Settings = {
 	readImageAs: string;
 	readSubAs: string;
 	readSupAs: string;
+	readNotesAs: string;
 };
 
 const defaultSettings: Settings = {
@@ -108,7 +109,7 @@ const defaultSettings: Settings = {
 		notes: 'jane',
 	},
 	speed: 1,
-	notesSpeed: 1.2,
+	notesSpeed: 1,
 	defaultPause: 1,
 	titlePause: 3,
 	transforms: {
@@ -129,6 +130,7 @@ const defaultSettings: Settings = {
 	readImageAs: '',
 	readSubAs: '',
 	readSupAs: '',
+	readNotesAs: '',
 };
 
 export let settings: Readonly<Settings> = defaultSettings;

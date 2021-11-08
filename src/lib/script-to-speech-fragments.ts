@@ -186,11 +186,17 @@ export function scriptToSpeechFragments( script: Script )
 			case 'note':
 				if ( settings.readNotes )
 				{
-					const noteContent = processNote( item.name, script );
+					let noteContent = processNote( item.name, script );
 					
 					if ( noteContent.length === 0 )
 					{
 						break;
+					}
+					
+					if ( settings.readNotesAs )
+					{
+						noteContent = settings.readNotesAs.replace( '{name}', item.name )
+							+ noteContent;
 					}
 					
 					const savedState = {
@@ -214,7 +220,8 @@ export function scriptToSpeechFragments( script: Script )
 			case 'image':
 				if ( settings.readImageAs )
 				{
-					const imageText = settings.readImageAs.replace( '{name}', item.name );
+					const imageText = settings.readImageAs
+						.replace( '{name}', item.name );
 					
 					content += paragraph() + imageText + paragraph();
 					withText = withText || ( getTextSize( imageText ) !== 0 );
