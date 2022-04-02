@@ -10,6 +10,6 @@ export function escapeXml( text: string ): string
 {
 	return text.replace(
 		/[<>&"']/g,
-		( char ) => XML_CHAR_MAP[char],
+		( char ) => XML_CHAR_MAP[char]!,
 	);
 }

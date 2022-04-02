@@ -43,7 +43,7 @@ function randomChars( howMany: number ): string
 	
 	for ( let i = 0; i < howMany; i++ )
 	{
-		value += RANDOM_CHARS[ rnd[i] % RANDOM_CHARS.length ];
+		value += RANDOM_CHARS[ rnd[i]! % RANDOM_CHARS.length ];
 	}
 	
 	return value;

@@ -1,10 +1,5 @@
-// spell-checker:ignore wasm
-
-import { createReadStream, readFile as readFileCallback } from 'fs';
-import { promisify } from 'util';
-import { SaxEventType, SAXParser, Tag, Text, StringReader } from 'sax-wasm';
-
-const readFile = promisify( readFileCallback );
+import { createReadStream } from 'fs';
+import { Parser } from 'node-expat';
 
 export type MarkupOpenTag = {
 	type: 'open';
@@ -36,71 +31,64 @@ export async function readFb2File(
 ): Promise<void>
 {
 	const streamOptions = {
-		highWaterMark: 32 * 1024,
+		highWaterMark: 64 * 1024,
 	};
 	
-	const saxPath = require.resolve( 'sax-wasm/lib/sax-wasm.wasm' );
-	const saxWasmBuffer = await readFile( saxPath );
+	const parser = new Parser( 'UTF-8' );
 	
-	const parser = new SAXParser(
-		SaxEventType.OpenTag
-		| SaxEventType.CloseTag
-		| SaxEventType.Text
-		| SaxEventType.Cdata,
-		streamOptions,
+	parser.on(
+		'startElement',
+		( name: string, attrs: Record<string, string> ) =>
+		{
+			onMarkupEvent(
+				null,
+				{
+					type: 'open',
+					value: name,
+					attributes: new Map<string, string>(
+						Object.entries( attrs ),
+					),
+				},
+			);
+		},
+	);
+
+	parser.on(
+		'endElement',
+		( name: string ) =>
+		{
+			onMarkupEvent(
+				null,
+				{
+					type: 'close',
+					value: name,
+				},
+			);
+		},
 	);
 	
-	parser.eventHandler = ( event, data ) =>
-	{
-		switch ( event )
+	parser.on(
+		'text',
+		( text: string ) =>
 		{
-			case SaxEventType.OpenTag:
-				onMarkupEvent(
-					null,
-					{
-						type: 'open',
-						value: (data as Tag).value,
-						attributes: new Map<string, string>(
-							(data as Tag).attributes.map(
-								( { name, value } ) => [name, value],
-							),
-						),
-					},
-				);
-				break;
-			
-			case SaxEventType.CloseTag:
-				onMarkupEvent(
-					null,
-					{
-						type: 'close',
-						value: (data as Tag).value,
-					},
-				);
-				break;
-			
-			case SaxEventType.Text:
-			case SaxEventType.Cdata:
-				onMarkupEvent(
-					null,
-					{
-						type: 'text',
-						value: (data as (Text | StringReader)).value,
-					},
-				);
-				break;
-			
-			default:
-				break;
-		}
-	};
+			onMarkupEvent(
+				null,
+				{
+					type: 'text',
+					value: text,
+				},
+			);
+		},
+	);
 	
-	const ready = await parser.prepareWasm( saxWasmBuffer );
-	
-	if ( !ready )
-	{
-		return;
-	}
+	parser.on(
+		'error',
+		( error: Error ) =>
+		{
+			parser.end();
+			onMarkupEvent( error, doneEvent );
+		},
+	);
 	
 	const fileStream = createReadStream( filePath, streamOptions );
 	
@@ -108,13 +96,6 @@ export async function readFb2File(
 		type: 'done',
 	};
 	
-	fileStream.on(
-		'data',
-		( chunk: Buffer ) =>
-		{
-			parser.write( chunk );
-		},
-	);
 	fileStream.on(
 		'end',
 		() =>
@@ -131,4 +112,6 @@ export async function readFb2File(
 			onMarkupEvent( error, doneEvent );
 		},
 	);
+	
+	fileStream.pipe( parser );
 }

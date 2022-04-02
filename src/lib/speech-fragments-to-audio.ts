@@ -152,5 +152,5 @@ async function findLastPart( baseDir: string )
 		.filter( ( file ) => file.endsWith( '.ogg' ) )
 		.sort();
 	
-	return basename( files[files.length - 1], '.ogg' );
+	return basename( files[files.length - 1]!, '.ogg' );
 }

@@ -9,9 +9,16 @@ const readFile = promisify( readFileCallback );
 
 void async function ()
 {
+	if ( !process.argv[2] )
+	{
+		console.error( 'Path to FB2 file is required' );
+		
+		return;
+	}
+	
 	const configPath = pathResolve( process.cwd(), 'settings.json' );
 	const userSettings = JSON.parse( await readFile( configPath, 'utf8' ) );
-	const bookPath = pathResolve( process.cwd(), process.argv[2] );
+	const bookPath = pathResolve( process.cwd(), process.argv[2]! );
 	
 	await main( bookPath, userSettings );
 }()

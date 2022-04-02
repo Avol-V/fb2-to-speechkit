@@ -113,7 +113,7 @@ export function speechKit( options: Options ): Promise<Buffer>
 					'timeout',
 					() =>
 					{
-						request.abort();
+						request.destroy();
 						
 						if ( options.retries && retryAttempt < options.retries )
 						{
